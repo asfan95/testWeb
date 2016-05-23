@@ -1,0 +1,239 @@
+ <head>
+
+	<title>testWeb</title>
+
+  	<!--Import Google Icon Font-->
+    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  	<!-- Compiled and minified CSS -->
+  	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css">
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC8SwppDlm5ewKxIcfiWVgykh-Z83Ho5uU&signed_in=true&callback=initMap&libraries=places&libraries=places"
+        async defer>
+    </script>
+
+  	<!--Import jQuery before materialize.js-->
+  	<!-- Compiled and minified JavaScript -->
+  	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"></script>
+
+</head>
+
+<body style="background-color:#303030;">
+
+	<div id="introPage" style="display: inline; ">
+		{{> introPage}}
+	</div>
+
+	<div id="mainPage" style="display : none; ">
+		{{> mainPage}}
+	</div>
+
+	<div id="clubPage" style="display : none; ">
+		{{> clubPage}}
+	</div>
+
+  	<script type="text/javascript">
+		var Page_data;
+		var pageName;
+		function switchPage(current, next)
+  		{
+    		$(current).css("display","none");
+    		$(next).css("display","inline");
+  		}
+		$("#cubes").on('click', 'Div.tabs',function(e) 
+		{
+			page_name=$(this).text();
+			alert(page_name);
+			pageName=page_name;
+			Page_data  = new Mongo.Collection(page_name);
+
+			var div = document.getElementById('club_Page_Title');
+
+			switchPage('#mainPage','#clubPage')
+		});
+	</script>
+</body>
+
+<template name="clubPage">
+	
+</template>
+<template name="mainPage">
+
+  	<style type="text/css">
+  		#map
+  		{
+    		height: 100%;
+  		}
+  	</style>
+
+	<div class="row" style="display:inline; background-color:#303030;" >
+
+  		<div class="col s8 m8 l9 " style="height: 70vh; padding:7.5px 2.5px 7.5px 7.5px;">
+    		<div class="light-blue darken-4" style="height: 90%; overflow: auto;">
+    			main tiles
+    			<div id="cubes"></div>
+			</div>
+    		<div class="light-blue darken-1" style="height: 10%;" onclick="findNear()">find store</div>
+  		</div>
+  		<div class="col s4 m4 l3 " style="height: 70vh; padding:7.5px 7.5px 7.5px 2.5px;" >
+    		<div class="indigo darken-4" style="height: 100%;">friend tile</div>
+  		</div>
+  		<div class="col s12 " style="height: 30vh; padding:0px 7.5px 7.5px 7.5px;" >
+			<div id="map"></div>    
+  		</div>
+	</div>
+
+
+	<script type="text/javascript">
+		var Page_data
+
+  		var map; 
+		var infowindow;
+
+		var myCord;
+		var page_name;
+
+		function initMap()
+		{
+			if (navigator.geolocation)
+	    	{
+	    		navigator.geolocation.watchPosition(function(position){
+	   			myCord={lat:position.coords.latitude, lng: position.coords.longitude};
+	    		});
+	    	}else{
+	    		alert("doesnt support geolocation");
+	    	}
+	  		var curPos = {lat: 38., lng: -77.41936};
+			map = new google.maps.Map(document.getElementById('map'), {center: curPos, zoom: 15});
+			infowindow = new google.maps.InfoWindow();
+		}
+		//	map.setCenter(myCord);
+		function switchPage(text)
+		{
+			$("#intro_Page").css("display","none");
+			$("#main_Page").css("display","none");
+			$("#club_Page").css("display","none");
+			$(text).css("display","inline");
+		}
+		function createTab(text)
+		{
+			var t = document.createTextNode(text);
+			var pad = document.createElement("Div");
+
+			pad.setAttribute("style","padding:2vw;"); 
+
+	    	var tab = document.createElement("Div");
+		
+			tab.setAttribute("class", "tabs col s12");
+
+			tab.setAttribute("style", "height:100%;background-color:#505050;"); 
+	    	
+	    	pad.appendChild(tab);
+		                                    // Append the text to <button>
+		    tab.appendChild(t);
+		    //document.body.appendChild(btn);
+			document.getElementById("cubes").appendChild(pad);
+		}
+
+		function findNear()
+		{
+			map.setCenter(myCord);
+
+			var service = new google.maps.places.PlacesService(map);
+	  	
+	  		service.nearbySearch({
+	   		 location: myCord,
+	    	radius: 10000,
+	    	types: ['night_club']
+	  		}, callback);
+		}
+
+		function callback(results, status)
+		{
+			document.getElementById("cubes").innerHTML = "";
+
+	  		if (status === google.maps.places.PlacesServiceStatus.OK)
+	  		{
+	    	for (var i = 0; i < results.length; i++)
+	    	{
+	    		createMarker(results[i]);
+	    		createTab(results[i].name);	
+
+	    	}
+	  		}
+		}
+
+		function createMarker(place) 
+		{
+	  		var placeLoc = place.geometry.location;
+	  		var marker = new google.maps.Marker({
+	    	map: map,
+	    	position: place.geometry.location
+	  		});
+
+	  		google.maps.event.addListener(marker, 'click', function() {
+	    	infowindow.setContent(place.name);
+	    	infowindow.open(map, this);
+	 		});
+		}
+	</script>
+
+</template>
+
+<template name="introPage">
+	<div class="row" style="background-color:#303030;">
+  		<div class="col s6 m6 l4 " style="height: 100vh; padding:7.5px 5px 7.5px 7.5px;" >
+    		<div class="teal darken-1" style="height: 100%;">picture title</div>
+  		</div>
+   
+  		<div class="col s3 m3 l4" style="height: 30vh; padding:7.5px 5px 5px 5px;">
+    		<div class="deep-purple darken-2 modal-trigger" href="#signIn" style="height: 100%;">sign in</div>
+  		</div>
+      
+  		<div class="col s3 m3 l4" style="height: 30vh; padding:7.5px 7.5px 5px 5px;">         
+    		<div class="deep-purple darken-2 modal-trigger" href="#signUp" style="height: 100%;">sign up</div>
+  		</div>
+  
+  		<div class="col s6 m6 l8" style="height: 40vh; padding:5px 7.5px 5px 5px; ">    
+    		<div class="deep-purple darken-4" style="height: 100%;">picture</div>
+  		</div>
+
+  		<div class="col s4 m4 l6" style="height: 30vh; padding:5px 5px 7.5px 5px;" onclick="switchPage('#introPage','#mainPage')">
+    		<div class="deep-purple darken-2" style="height: 100%;" >continue On</div>
+  		</div>
+      
+  		<div class="col s2 m2 l2" style="height: 30vh; padding:7.5px 7.5px 7.5px 5px;">
+    		<div class="deep-purple darken-2" style="height: 100%;">about</div>
+  		</div>
+	</div>
+	
+	<!-- signIn Modal Structure -->
+  	<div id="signIn" class="modal bottom-sheet">
+    	<div class="modal-content">
+    	  <h4>Sign In</h4>
+    	  <p>A bunch of text</p>
+    	</div>
+    	<div class="modal-footer">
+    		<a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Sign In</a>
+    	</div>
+  	</div>
+         
+  	<!-- signUp Modal Structure -->
+  	<div id="signUp" class="modal bottom-sheet">
+    	<div class="modal-content">
+    		<h4>Sign Up</h4>
+    		<p>A bunch of text</p>
+    	</div>
+    	<div class="modal-footer">
+      		<a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Sign Up</a>
+    	</div>
+  	</div>
+  	<script type="text/javascript">
+
+ 	$(document).ready(function(){
+    	// the "href" attribute of .modal-trigger must specify the modal ID that wants to be triggered
+    	$('.modal-trigger').leanModal();
+  	});
+
+</script>
+</template>
